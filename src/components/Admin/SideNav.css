@@ -1,0 +1,164 @@
+/* Sidebar */
+
+.sidebar {
+  background: #f8f9fa;
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+  padding: 0;
+  width: 250px;
+  z-index: 11;
+  transition: width 0.25s ease-in-out, background 0.25s ease-in-out;
+  -webkit-transition: width 0.25s ease-in-out, background 0.25s ease-in-out;
+  -moz-transition: width 0.25s ease-in-out, background 0.25s ease-in-out;
+  -ms-transition: width 0.25s ease-in-out, background 0.25s ease-in-out;
+}
+
+.nav {
+  overflow: hidden;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  margin-bottom: 60px;
+}
+
+.nav-item {
+  transition-duration: 0.25s;
+  transition-property: background;
+  -webkit-transition-property: background;
+}
+
+.collapse {
+  z-index: 999;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 10px 15px 10px 15px;
+  color: #333;
+  border-radius: 8px;
+  transition-duration: 0.45s;
+  transition-property: color;
+  -webkit-transition-property: color;
+}
+
+.nav-link i {
+  color: inherit;
+}
+
+.nav-link i.menu-icon {
+  font-size: 18px;
+  line-height: 1;
+  margin-right: 1rem;
+  color: #666;
+}
+
+.nav-link i.menu-arrow {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin-left: auto;
+  color: #999;
+}
+
+.nav-link i.menu-arrow:before {
+  content: "\e649";
+  font-family: "themify";
+  font-style: normal;
+  display: block;
+  font-size: 0.687rem;
+  line-height: 10px;
+  transition: all 0.2s ease-in;
+}
+
+.menu-title {
+  color: inherit;
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.nav-item.active > .nav-link {
+  background: #007bff;
+  position: relative;
+  color: #fff;
+}
+
+.nav-item.active > .nav-link i,
+.nav-item.active > .nav-link .menu-title,
+.nav-item.active > .nav-link .menu-arrow {
+  color: #fff;
+}
+
+.nav-item.active > .nav-link i.menu-arrow:before {
+  content: "\e64b";
+}
+
+.nav-item:hover > .nav-link {
+  background: #f1f1f1;
+  color: #007bff;
+}
+
+.nav-item:hover > .nav-link i,
+.nav-item:hover > .nav-link .menu-title,
+.nav-item:hover > .nav-link .menu-arrow {
+  color: #007bff;
+}
+
+.sub-menu {
+  margin-top: 0;
+  list-style: none;
+  padding: 15px;
+  background: #f1f1f1;
+}
+
+.sub-menu .nav-item {
+  padding: 0;
+}
+
+.sub-menu .nav-link {
+  color: #555;
+  padding: 8px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sub-menu .nav-link:hover {
+  color: #007bff;
+}
+
+.sidebar-dark .sidebar {
+  background: #343a40;
+}
+
+.sidebar-dark .nav-item .nav-link {
+  color: #ccc;
+}
+
+.sidebar-dark .nav-item .nav-link i.menu-icon {
+  color: #aaa;
+}
+
+.sidebar-dark .nav-item.active > .nav-link {
+  background: #1d2124;
+  color: #fff;
+}
+
+.sidebar-dark .nav-item:hover > .nav-link {
+  background: #495057;
+  color: #fff;
+}
+
+.sidebar-offcanvas {
+  position: fixed;
+  max-height: calc(100vh - 56px);
+  top: 56px;
+  bottom: 0;
+  overflow: auto;
+  right: -250px;
+  transition: all 0.25s ease-out;
+}
+
+.sidebar-offcanvas.active {
+  right: 0;
+}
