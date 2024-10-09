@@ -36,8 +36,13 @@ const [getBannerById, setGetBannerById] = useState([]);
   // Fetch dishes from the backend on component mount
   useEffect(() => {
     const fetch = async () => {
+      const token = localStorage.getItem('token'); // Get token from localStorage
       try {
-        const response = await axios.get(`${backendUrl}/admin/getbanner`);
+        const response = await axios.get(`${backendUrl}/admin/getbanner`, {
+          headers: {
+            Authorization: `Bearer ${token}`,  // Include token for authentication
+          },
+        });
         const data = response.data;
         setGetBanner(data);
       } catch (err) {
@@ -46,86 +51,95 @@ const [getBannerById, setGetBannerById] = useState([]);
     };
     fetch();
   }, [backendUrl]);
-
-
-
-
-  // Function to handle POST dishes
+  
+  
+  // Function to handle POST banners (with image upload)
   const postDishes = async () => {
+    const token = localStorage.getItem('token');
     const formData = new FormData();
-   
-
+  
     // Append each file to formData
     for (let i = 0; i < image.length; i++) {
       formData.append("image", image[i]);
     }
-
+  
     try {
-        await axios.post(`${backendUrl}/admin/postbanner`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        window.location.reload(); // Refresh page after successful post
+      await axios.post(`${backendUrl}/admin/postbanner`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include token for authentication
+          'Content-Type': 'multipart/form-data',  // Set content type for file upload
+        },
+      });
+      window.location.reload(); // Refresh page after successful post
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
-};
-
-
-
-const updateDishes = async () => {
-  const formData = new FormData();
-  if (image) {
-    image.forEach(file => formData.append("image", file));
-  }
-
-  try {
-    await axios.put(`${backendUrl}/admin/putbanner/${uid}`, formData);
-    window.location.reload(); // Refresh after update
-  } catch (err) {
-    console.error('Error updating dish:', err);
-  }
-};
-
-const handleOn = async (id) => {
-  setOn(true);
-  setUid(id);
-
-  try {
-    const response = await axios.get(`${backendUrl}/admin/getbannerbyid/${id}`);
-    const data = response.data;
-    setGetBannerById({
+  };
+  
+  
+  // Function to handle updating banners (with image upload)
+  const updateDishes = async () => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+  
+    if (image) {
+      image.forEach(file => formData.append("image", file));
+    }
+  
+    try {
+      await axios.put(`${backendUrl}/admin/putbanner/${uid}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include token for authentication
+          'Content-Type': 'multipart/form-data',  // Set content type for file upload
+        },
+      });
+      window.location.reload(); // Refresh after update
+    } catch (err) {
+      console.error('Error updating dish:', err);
+    }
+  };
+  
+  
+  // Function to handle retrieving a banner by ID
+  const handleOn = async (id) => {
+    const token = localStorage.getItem('token');
+    setOn(true);
+    setUid(id);
+  
+    try {
+      const response = await axios.get(`${backendUrl}/admin/getbannerbyid/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include token for authentication
+        },
+      });
+      const data = response.data;
+      setGetBannerById({
         image: data.image || [], // Initialize image array
-    });
-   
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const handleUpdateChange = (e) => {
-  const { name, value } = e.target;
-  setGetBannerById((prevState) => ({
-    ...prevState,
-    [name]: value,
-  }));
-};
-
-
-
-    // Function to handle deletion of dishes
-    const handleDelete = async (id) => {
-      const windowConfirmation = window.confirm("Are you sure to Delete this item");
-      if (windowConfirmation) {
-        try {
-          await axios.delete(`${backendUrl}/admin/deletebanner/${id}`);
-          window.location.reload(); // Refresh page after successful deletion
-        } catch (err) {
-          console.log(err);
-        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  
+  
+  // Function to handle deletion of banners
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem('token');
+    const windowConfirmation = window.confirm("Are you sure to Delete this item");
+    if (windowConfirmation) {
+      try {
+        await axios.delete(`${backendUrl}/admin/deletebanner/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,  // Include token for authentication
+          },
+        });
+        window.location.reload(); // Refresh page after successful deletion
+      } catch (err) {
+        console.log(err);
       }
-    };
+    }
+  };
+  
   
 
 

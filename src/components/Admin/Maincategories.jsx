@@ -28,31 +28,46 @@ function Maincategories() {
   // console.log(backendUrl,'the url')
   const handleOff = ()=> setOn(false)
 
-  const postMaincategories = async()=>{
+  const postMaincategories = async () => {
+    const token = localStorage.getItem('token');
     const data = {
-        maincategories:maincategories
+      maincategories: maincategories
+    };
+  
+    try {
+      await axios.post(`${backendUrl}/admin/postmaincategories`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Corrected Bearer token with backticks
+          'Content-Type': 'application/json',  // Content-Type header for JSON
+        },
+      });
+      window.location.reload();  // Reload the page after successful post
+    } catch (err) {
+      console.log(err);  // Log any errors
     }
-    try{
-     await axios.post(`${backendUrl}/admin/postmaincategories`, data)
-     window.location.reload()
-    }catch(err){
-        console.log(err)
-    }
-  }
-
+  };
+  
   useEffect(() => {
-    const fetch = async()=>{
-        try{
-            const response = await axios.get(`${backendUrl}/admin/getmaincategories`)
-            const data = response.data
-            setGetMaincategories(data)
-            // console.log(backendUrl,'the url')
-        }catch(err){
-            console.log(err,'the error message showing that')
-        }
-    }
-    fetch()
-  }, [backendUrl])
+    const fetchCategories = async () => {
+      const token = localStorage.getItem('token'); 
+      try {
+        const response = await axios.get(`${backendUrl}/admin/getmaincategories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,  // Corrected Bearer token usage with backticks
+            'Content-Type': 'application/json',  // Content-Type header for JSON
+          },
+        });
+        
+        const data = response.data;
+        setGetMaincategories(data);  // Assuming you're setting state with fetched categories
+      } catch (err) {
+        console.log(err, 'the error message showing that');
+      }
+    };
+  
+    fetchCategories();
+  }, [backendUrl]);  // Ensure that backendUrl is properly handled as a dependency
+  
   
   
   const handleOn = async(id)=> {
@@ -69,36 +84,52 @@ function Maincategories() {
     }
 
 }
-const handleUpdateChange = (e)=>{
-    const {name, value} = e.target
-    setGetMaincategoriesById((prevstate)=>({...prevstate, [name]:value}))
-    
-}
+// Handle form input changes for updating categories
+const handleUpdateChange = (e) => {
+  const { name, value } = e.target;
+  setGetMaincategoriesById((prevState) => ({ ...prevState, [name]: value }));
+};
 
-const updateMaincategories = async()=>{
-    const data = {
-        maincategories:getMaincategoriesById.maincategories
-    }
-  try{
-    await axios.put(`${backendUrl}/admin/putmaincategories/${uid}`, data)
-    window.location.reload()
-  }catch(err){
-    console.log(err)
+// Update main categories with authentication
+const updateMaincategories = async () => {
+  const token = localStorage.getItem('token');
+  const data = {
+    maincategories: getMaincategoriesById.maincategories  // Assuming maincategories is part of the state
+  };
+
+  try {
+    await axios.put(`${backendUrl}/admin/putmaincategories/${uid}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,  // Include JWT token for authentication
+        'Content-Type': 'application/json',  // Content type for JSON
+      },
+    });
+    window.location.reload();  // Reload the page after successful update
+  } catch (err) {
+    console.log(err);  // Log error for debugging
   }
-}
+};
 
-const handleDelete = async(id)=>{
-    const windowConfirmation = window.confirm('Are you sure to Delete this item')
-    if(windowConfirmation){
-        try{
-            await axios.delete(`${backendUrl}/admin/deletemaincategories/${id}`)
-            window.location.reload()
-        }catch(err){
-            console.log(err)
-        }
+// Handle delete with JWT token and confirmation
+const handleDelete = async (id) => {
+  const token = localStorage.getItem('token');
+  const windowConfirmation = window.confirm('Are you sure to delete this item?');
+
+  if (windowConfirmation) {
+    try {
+      await axios.delete(`${backendUrl}/admin/deletemaincategories/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include JWT token for delete operation
+          'Content-Type': 'application/json',  // Content type for JSON
+        },
+      });
+      window.location.reload();  // Reload after successful delete
+    } catch (err) {
+      console.log(err);  // Log error for debugging
     }
-    
-}
+  }
+};
+
 
 
   return (

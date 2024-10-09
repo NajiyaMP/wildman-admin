@@ -1,149 +1,126 @@
-//without backend
-
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom'; // Assuming you're using React Router
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import logooo from '../Images/wildmanlogo.png';
 
 const Login = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [error, setError] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const navigate = useNavigate();
+  const backendUrl = process.env.REACT_APP_MACHINE_TEST_1_BACKEND_URL;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (username === 'user' && password === 'wildman123') {
-      setLoggedIn(true);
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const validateInput = () => {
+    let isValid = true;
+    if (username.length < 5) {
+      setUsernameError('Username must contain at least 5 characters.');
+      isValid = false;
     } else {
-      setError('Invalid username or password');
+      setUsernameError('');
+    }
+
+    if (password.length < 8) {
+      setPasswordError('Password must contain at least 8 characters.');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
+    return isValid;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!validateInput()) {
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${backendUrl}/admin/login`, {
+        username,
+        password,
+      });
+
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        navigate('/home');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'An error occurred. Please try again.');
     }
   };
 
-  if (loggedIn) {
-    return <Navigate to="/home" replace />;
-  }
-
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h3>Admin Login</h3>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            className="login-input"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            className="login-input"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit" className="login-button">Login</button>
-        </form>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="container-fluid d-flex justify-content-center align-items-center vh-100">
+      <div className="login-panel col-12 col-md-6 col-lg-4 p-4 shadow-sm">
+        <div className="login-body">
+          <div className="top d-flex justify-content-between align-items-center mb-4">
+            <div className="logo">
+              <img src={logooo} alt="Logo" className="img-fluid" />
+            </div>
+            <Link to="/">
+              <i className="fa-duotone fa-house-chimney"></i>
+            </Link>
+          </div>
+          <div className="bottom">
+            <h3 className="panel-title text-center mb-4">Admin Login</h3>
+            {error && <div className="alert alert-danger">{error}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="input-group mb-3">
+                <span className="input-group-text">
+                  <i className="fa-regular fa-user"></i>
+                </span>
+                <input
+                  type="text"
+                  className={`form-control ${usernameError ? 'is-invalid' : ''}`}
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+                {usernameError && <div className="invalid-feedback">{usernameError}</div>}
+              </div>
+              <div className="input-group mb-3">
+                <span className="input-group-text">
+                  <i className="fa-regular fa-lock"></i>
+                </span>
+                <input
+                  type={passwordVisible ? 'text' : 'password'}
+                  className={`form-control ${passwordError ? 'is-invalid' : ''}`}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Link
+                  role="button"
+                  className="input-group-text password-show"
+                  onClick={togglePasswordVisibility}
+                >
+                  <i className={`fa-duotone fa-eye${passwordVisible ? '' : '-slash'}`}></i>
+                </Link>
+                {passwordError && <div className="invalid-feedback">{passwordError}</div>}
+              </div>
+              <button type="submit" className="btn w-100 mt-4" style={{backgroundColor:'black',color:'white'}}>
+                Sign in
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Login;
-
-
-
-
-
-
-
-
-
-//with backend
-// import axios from 'axios';
-// import { useState } from 'react';
-// import { Navigate } from 'react-router-dom'; // Assuming you're using React Router
-
-// const Login = () => {
-//     const backendUrl = process.env.REACT_APP_MACHINE_TEST_1_BACKEND_URL;
-//     const [loggedIn, setLoggedIn] = useState(false);
-//     const [error, setError] = useState('');
-//     const [username, setUsername] = useState('');
-//     const [password, setPassword] = useState('');
-//     const [loading, setLoading] = useState(false); // New state for loading
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-//         setLoading(true);
-//         setError('');
-//         try {
-//             const response = await axios.post(`${backendUrl}/admin/login`, {
-//                 username: username,
-//                 password: password,
-//             }, { timeout: 5000 }); // Setting a 5 seconds timeout for the request
-            
-//             if (response.status === 200) {
-//                 setLoggedIn(true); // Set loggedIn to true upon successful login
-//             } else {
-//                 setError('Unexpected error occurred. Please try again later.');
-//             }
-//         } catch (err) {
-//             if (err.code === 'ECONNABORTED') {
-//                 setError('Login request timed out. Please check your internet connection and try again.');
-//             } else if (err.response && err.response.status === 401) {
-//                 setError('Invalid username or password');
-//             } else {
-//                 setError('Failed to connect to the server. Please try again later.');
-//             }
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     // If logged in, navigate to /home
-//     if (loggedIn) {
-//         return <Navigate to="/home" replace />;
-//     }
-
-//     return (
-//         <div className="login-container">
-//             <div className="login-card">
-//                 <h3><b>Admin Panel</b></h3>
-//                 <form onSubmit={handleSubmit}>
-//                     <input
-//                         type="text"
-//                         className="login-input"
-//                         placeholder="Username"
-//                         value={username}
-//                         onChange={(e) => setUsername(e.target.value)}
-//                     />
-//                     <input
-//                         type="password"
-//                         className="login-input"
-//                         placeholder="Password"
-//                         value={password}
-//                         onChange={(e) => setPassword(e.target.value)}
-//                     />
-//                     <button type="submit" className="login-button" disabled={loading}>
-//                         {loading ? 'Logging in...' : 'Login'}
-//                     </button>
-//                     {error && <p className="error-message">{error}</p>}
-//                 </form>
-//             </div>
-
-//             {/* Add spinner container */}
-//             {loading && (
-//                 <div className="spinner-container">
-//                     <div className="spinner"></div>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default Login;
-
-
-
-
 

@@ -27,10 +27,17 @@ function Color() {
             alert("Color cannot be empty");
             return;
         }
-
+    
         const data = { Color: color }; // Use consistent naming
+        const token = localStorage.getItem('token'); // Get token from localStorage
+    
         try {
-            const response = await axios.post(`${backendUrl}/admin/postcolors`, data);
+            const response = await axios.post(`${backendUrl}/admin/postcolors`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                    'Content-Type': 'application/json',  // Set content type
+                },
+            });
             setGetColors((prev) => [...prev, response.data]); // Update state with the new color
             setColor(''); // Clear input after submission
             handleClose(); // Close modal
@@ -39,11 +46,16 @@ function Color() {
             alert("An error occurred while adding the color.");
         }
     };
-
+    
     useEffect(() => {
         const fetchColors = async () => {
+            const token = localStorage.getItem('token'); // Get token from localStorage
             try {
-                const response = await axios.get(`${backendUrl}/admin/getcolors`);
+                const response = await axios.get(`${backendUrl}/admin/getcolors`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,  // Include token for authentication
+                    },
+                });
                 setGetColors(response.data);
             } catch (err) {
                 console.error(err);
@@ -52,31 +64,42 @@ function Color() {
         };
         fetchColors();
     }, [backendUrl]);
-
+    
     const handleOn = async (id) => {
         setOn(true);
         setUid(id);
-
+        const token = localStorage.getItem('token'); // Get token from localStorage
+    
         try {
-            const response = await axios.get(`${backendUrl}/admin/getcolorsbyid/${id}`);
+            const response = await axios.get(`${backendUrl}/admin/getcolorsbyid/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
             setGetColorsById(response.data);
         } catch (err) {
             console.error(err);
             alert("An error occurred while fetching color details.");
         }
     };
-
+    
     const handleUpdateChange = (e) => {
         const { name, value } = e.target;
         setGetColorsById((prevstate) => ({ ...prevstate, [name]: value }));
     };
-
+    
     const updateColors = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         const data = {
             Color: getColorsById.Color // Use the correct field name
         };
         try {
-            const response = await axios.put(`${backendUrl}/admin/putcolors/${uid}`, data);
+            const response = await axios.put(`${backendUrl}/admin/putcolors/${uid}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                    'Content-Type': 'application/json',  // Set content type
+                },
+            });
             setGetColors((prev) => prev.map(item => (item._id === uid ? response.data : item))); // Update the color in state
             handleOff(); // Close modal
         } catch (err) {
@@ -84,12 +107,17 @@ function Color() {
             alert("An error occurred while updating the color.");
         }
     };
-
+    
     const handleDelete = async (id) => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         const windowConfirmation = window.confirm('Are you sure you want to delete this item?');
         if (windowConfirmation) {
             try {
-                await axios.delete(`${backendUrl}/admin/deletecolors/${id}`);
+                await axios.delete(`${backendUrl}/admin/deletecolors/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,  // Include token for authentication
+                    },
+                });
                 setGetColors((prev) => prev.filter(item => item._id !== id)); // Remove the deleted color from state
             } catch (err) {
                 console.error(err);
@@ -97,6 +125,7 @@ function Color() {
             }
         }
     };
+    
 
     return (
         <div>

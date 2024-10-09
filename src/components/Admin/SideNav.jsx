@@ -11,6 +11,8 @@ import { FiLogOut } from 'react-icons/fi'; // Import the logout icon
 function SideNav() {
   const  backendUrl = process.env.REACT_APP_MACHINE_TEST_1_BACKEND_URL;
   const navigate = useNavigate(); // Initialize navigate function
+  
+  
   const handleLogout = async () => {
     try {
       const response = await axios.post(`${backendUrl}/admin/logout`, {}, { withCredentials: true });
@@ -113,7 +115,7 @@ function SideNav() {
                 <FiLogOut size={20} />
                 Logout
               </button> */}
-              <button  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', backgroundColor: 'black', color: 'red', borderRadius: '4px', cursor: 'pointer' ,marginTop:'4rem',marginLeft:'3rem'}}>
+              <button onClick={handleLogout}  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', border: 'none', backgroundColor: 'black', color: 'red', borderRadius: '4px', cursor: 'pointer' ,marginTop:'4rem',marginLeft:'3rem'}}>
                 <FiLogOut size={20} />
                 <a href='/' style={{color:'red'}}>Logout</a>
               </button> 

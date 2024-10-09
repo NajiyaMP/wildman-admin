@@ -46,88 +46,197 @@ function Coupon() {
   };
 
   // Fetch all coupons
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const couponsResponse = await axios.get(`${backendUrl}/admin/coupons`);
+  //       setGetCoupons(couponsResponse.data);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [backendUrl]);
+
+  // // Function to handle POST coupons
+  // const postCoupon = async () => {
+  //   const formData = {
+  //     couponName,
+  //     discount,
+  //     minDiscount,
+  //     startingDate,
+  //     expiryDate,
+  //     active
+  //   };
+  //   try {
+  //     await axios.post(`${backendUrl}/admin/coupon`, formData);
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // // Function to handle PUT coupons
+  // const updateCoupon = async () => {
+  //   const formData = {
+  //     couponName: getCouponsById.couponName,
+  //     discount: getCouponsById.discount,
+  //     minDiscount: getCouponsById.minDiscount,
+  //     startingDate: getCouponsById.startingDate,
+  //     expiryDate: getCouponsById.expiryDate,
+  //     active: getCouponsById.active
+  //   };
+
+  //   try {
+  //     await axios.put(`${backendUrl}/admin/coupon/${uid}`, formData);
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.error('Error updating coupon:', err);
+  //   }
+  // };
+
+  // // Function to handle GET coupon by ID
+  // const handleOn = async (id) => {
+  //   setShow(true);
+  //   setUid(id);
+
+  //   try {
+  //     const response = await axios.get(`${backendUrl}/admin/coupon/${id}`);
+  //     const data = response.data;
+  //     setGetCouponsById({
+  //       couponName: data.couponName,
+  //       discount: data.discount,
+  //       minDiscount: data.minDiscount,
+  //       startingDate: data.startingDate,
+  //       expiryDate: data.expiryDate,
+  //       active: data.active
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // // Function to handle DELETE coupon by ID
+  // const handleDelete = async (id) => {
+  //   const windowConfirmation = window.confirm("Are you sure to delete this coupon?");
+  //   if (windowConfirmation) {
+  //     try {
+  //       await axios.delete(`${backendUrl}/admin/coupon/${id}`);
+  //       window.location.reload();
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   }
+  // };
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const couponsResponse = await axios.get(`${backendUrl}/admin/coupons`);
-        setGetCoupons(couponsResponse.data);
-      } catch (err) {
-        console.log(err);
-      }
+        const token = localStorage.getItem('token'); // Get token from localStorage
+        try {
+            const couponsResponse = await axios.get(`${backendUrl}/admin/coupons`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
+            setGetCoupons(couponsResponse.data);
+        } catch (err) {
+            console.log(err);
+        }
     };
     fetchData();
-  }, [backendUrl]);
+}, [backendUrl]);
 
-  // Function to handle POST coupons
-  const postCoupon = async () => {
+// Function to handle POST coupons
+const postCoupon = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
     const formData = {
-      couponName,
-      discount,
-      minDiscount,
-      startingDate,
-      expiryDate,
-      active
+        couponName,
+        discount,
+        minDiscount,
+        startingDate,
+        expiryDate,
+        active
     };
     try {
-      await axios.post(`${backendUrl}/admin/coupon`, formData);
-      window.location.reload();
+        await axios.post(`${backendUrl}/admin/coupon`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+                'Content-Type': 'application/json',  // Set content type
+            },
+        });
+        window.location.reload();
     } catch (err) {
-      console.log(err);
+        console.log(err);
     }
-  };
+};
 
-  // Function to handle PUT coupons
-  const updateCoupon = async () => {
+// Function to handle PUT coupons
+const updateCoupon = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
     const formData = {
-      couponName: getCouponsById.couponName,
-      discount: getCouponsById.discount,
-      minDiscount: getCouponsById.minDiscount,
-      startingDate: getCouponsById.startingDate,
-      expiryDate: getCouponsById.expiryDate,
-      active: getCouponsById.active
+        couponName: getCouponsById.couponName,
+        discount: getCouponsById.discount,
+        minDiscount: getCouponsById.minDiscount,
+        startingDate: getCouponsById.startingDate,
+        expiryDate: getCouponsById.expiryDate,
+        active: getCouponsById.active
     };
 
     try {
-      await axios.put(`${backendUrl}/admin/coupon/${uid}`, formData);
-      window.location.reload();
+        await axios.put(`${backendUrl}/admin/coupon/${uid}`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+                'Content-Type': 'application/json',  // Set content type
+            },
+        });
+        window.location.reload();
     } catch (err) {
-      console.error('Error updating coupon:', err);
+        console.error('Error updating coupon:', err);
     }
-  };
+};
 
-  // Function to handle GET coupon by ID
-  const handleOn = async (id) => {
+// Function to handle GET coupon by ID
+const handleOn = async (id) => {
     setShow(true);
     setUid(id);
+    const token = localStorage.getItem('token'); // Get token from localStorage
 
     try {
-      const response = await axios.get(`${backendUrl}/admin/coupon/${id}`);
-      const data = response.data;
-      setGetCouponsById({
-        couponName: data.couponName,
-        discount: data.discount,
-        minDiscount: data.minDiscount,
-        startingDate: data.startingDate,
-        expiryDate: data.expiryDate,
-        active: data.active
-      });
+        const response = await axios.get(`${backendUrl}/admin/coupon/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+            },
+        });
+        const data = response.data;
+        setGetCouponsById({
+            couponName: data.couponName,
+            discount: data.discount,
+            minDiscount: data.minDiscount,
+            startingDate: data.startingDate,
+            expiryDate: data.expiryDate,
+            active: data.active
+        });
     } catch (err) {
-      console.log(err);
+        console.log(err);
     }
-  };
+};
 
-  // Function to handle DELETE coupon by ID
-  const handleDelete = async (id) => {
+// Function to handle DELETE coupon by ID
+const handleDelete = async (id) => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
     const windowConfirmation = window.confirm("Are you sure to delete this coupon?");
     if (windowConfirmation) {
-      try {
-        await axios.delete(`${backendUrl}/admin/coupon/${id}`);
-        window.location.reload();
-      } catch (err) {
-        console.log(err);
-      }
+        try {
+            await axios.delete(`${backendUrl}/admin/coupon/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
+            window.location.reload();
+        } catch (err) {
+            console.log(err);
+        }
     }
-  };
+};
 
   // Function to handle change in update form inputs
   const handleUpdateChange = (e) => {

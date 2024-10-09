@@ -25,115 +25,264 @@ function Subcategories() {
     const handleShow = () => setShow(true);
     const handleOff = () => setOn(false);
 
+    // // Fetch main categories from the backend
+    // const fetchMaincategories = async () => {
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getmaincategories`);
+    //         setGetMaincategories(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching main categories:', err);
+    //     }
+    // };
+
+    // // Fetch categories from the backend
+    // const fetchCategories = async () => {
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getcategories`);
+    //         setGetCategories(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching categories:', err);
+    //     }
+    // };
+
+    // // Fetch subcategories from the backend
+    // const fetchSubcategories = async () => {
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getsubcategories`);
+    //         setGetSubcategories(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching subcategories:', err);
+    //     }
+    // };
+
+    // // Post new subcategory to the backend
+    // const postSubcategories = async () => {
+    //     const data = {
+    //         name: subcategories,
+    //         category: categories, // Assuming categories state holds the selected category ID
+    //         maincategoriesData: maincategory // Add maincategoriesData to the data object
+    //     };
+    
+    //     console.log('Data to be posted:', data); // Debug log
+    
+    //     try {
+    //         await axios.post(`${backendUrl}/admin/postsubcategories`, data);
+    //         handleClose();
+    //         fetchSubcategories(); // Refresh subcategories after adding
+    //     } catch (err) {
+    //         console.error('Error posting subcategory:', err);
+    //     }
+    // };
+    // // Fetch main categories and subcategories on component mount
+    // useEffect(() => {
+    //     fetchMaincategories();
+    //     fetchCategories();
+    //     fetchSubcategories();
+    // }, [backendUrl]);
+
+    // // Handle edit action for subcategories
+    // const handleOn = async (id) => {
+    //     setOn(true);
+    //     setUid(id);
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getsubcategoriesbyid/${id}`);
+    //         setGetSubcategoriesById(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching subcategory by id:', err);
+    //     }
+    // };
+
+    // // Update changes for subcategory
+    // const handleUpdateChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setGetSubcategoriesById(prevState => ({ ...prevState, [name]: value }));
+    // };
+
+    // // Update subcategory details
+    // const updateSubcategory = async () => {
+    //     const data = {
+    //         name: getSubcategoriesById.name,
+    //         category: getSubcategoriesById.category
+    //     };
+    //     try {
+    //         await axios.put(`${backendUrl}/admin/putsubcategories/${uid}`, data);
+    //         handleOff();
+    //         fetchSubcategories(); // Refresh subcategories after updating
+    //     } catch (err) {
+    //         console.error('Error updating subcategory:', err);
+    //     }
+    // };
+
+    // // Delete subcategory
+    // const handleDelete = async (id) => {
+    //     const windowConfirmation = window.confirm('Are you sure to delete this item?');
+    //     if (windowConfirmation) {
+    //         try {
+    //             await axios.delete(`${backendUrl}/admin/deletesubcategories/${id}`);
+    //             fetchSubcategories(); // Refresh subcategories after deleting
+    //         } catch (err) {
+    //             console.error('Error deleting subcategory:', err);
+    //         }
+    //     }
+    // };
+
+    // // Log data on changes in subcategories and categories
+    // useEffect(() => {
+    //     console.log('Subcategories:', getSubcategories);
+    //     console.log('Categories:', getCategories);
+    // }, [getSubcategories, getCategories]);
+
+    // // Filter categories based on selected main category
+    // const filteredCategories = getCategories.filter(cat => cat.maincategoriesData._id === maincategory);
+
+
     // Fetch main categories from the backend
-    const fetchMaincategories = async () => {
+const fetchMaincategories = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    try {
+        const response = await axios.get(`${backendUrl}/admin/getmaincategories`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+            },
+        });
+        setGetMaincategories(response.data);
+    } catch (err) {
+        console.error('Error fetching main categories:', err);
+    }
+};
+
+// Fetch categories from the backend
+const fetchCategories = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    try {
+        const response = await axios.get(`${backendUrl}/admin/getcategories`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+            },
+        });
+        setGetCategories(response.data);
+    } catch (err) {
+        console.error('Error fetching categories:', err);
+    }
+};
+
+// Fetch subcategories from the backend
+const fetchSubcategories = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    try {
+        const response = await axios.get(`${backendUrl}/admin/getsubcategories`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+            },
+        });
+        setGetSubcategories(response.data);
+    } catch (err) {
+        console.error('Error fetching subcategories:', err);
+    }
+};
+
+// Post new subcategory to the backend
+const postSubcategories = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    const data = {
+        name: subcategories,
+        category: categories, // Assuming categories state holds the selected category ID
+        maincategoriesData: maincategory // Add maincategoriesData to the data object
+    };
+
+    console.log('Data to be posted:', data); // Debug log
+
+    try {
+        await axios.post(`${backendUrl}/admin/postsubcategories`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+                'Content-Type': 'application/json',  // Set content type
+            },
+        });
+        handleClose();
+        fetchSubcategories(); // Refresh subcategories after adding
+    } catch (err) {
+        console.error('Error posting subcategory:', err);
+    }
+};
+
+// Fetch main categories and subcategories on component mount
+useEffect(() => {
+    fetchMaincategories();
+    fetchCategories();
+    fetchSubcategories();
+}, [backendUrl]);
+
+// Handle edit action for subcategories
+const handleOn = async (id) => {
+    setOn(true);
+    setUid(id);
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    try {
+        const response = await axios.get(`${backendUrl}/admin/getsubcategoriesbyid/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+            },
+        });
+        setGetSubcategoriesById(response.data);
+    } catch (err) {
+        console.error('Error fetching subcategory by id:', err);
+    }
+};
+
+// Update changes for subcategory
+const handleUpdateChange = (e) => {
+    const { name, value } = e.target;
+    setGetSubcategoriesById(prevState => ({ ...prevState, [name]: value }));
+};
+
+// Update subcategory details
+const updateSubcategory = async () => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    const data = {
+        name: getSubcategoriesById.name,
+        category: getSubcategoriesById.category
+    };
+    try {
+        await axios.put(`${backendUrl}/admin/putsubcategories/${uid}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`,  // Include token for authentication
+                'Content-Type': 'application/json',  // Set content type
+            },
+        });
+        handleOff();
+        fetchSubcategories(); // Refresh subcategories after updating
+    } catch (err) {
+        console.error('Error updating subcategory:', err);
+    }
+};
+
+// Delete subcategory
+const handleDelete = async (id) => {
+    const token = localStorage.getItem('token'); // Get token from localStorage
+    const windowConfirmation = window.confirm('Are you sure to delete this item?');
+    if (windowConfirmation) {
         try {
-            const response = await axios.get(`${backendUrl}/admin/getmaincategories`);
-            setGetMaincategories(response.data);
+            await axios.delete(`${backendUrl}/admin/deletesubcategories/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
+            fetchSubcategories(); // Refresh subcategories after deleting
         } catch (err) {
-            console.error('Error fetching main categories:', err);
+            console.error('Error deleting subcategory:', err);
         }
-    };
+    }
+};
 
-    // Fetch categories from the backend
-    const fetchCategories = async () => {
-        try {
-            const response = await axios.get(`${backendUrl}/admin/getcategories`);
-            setGetCategories(response.data);
-        } catch (err) {
-            console.error('Error fetching categories:', err);
-        }
-    };
+// Log data on changes in subcategories and categories
+useEffect(() => {
+    console.log('Subcategories:', getSubcategories);
+    console.log('Categories:', getCategories);
+}, [getSubcategories, getCategories]);
 
-    // Fetch subcategories from the backend
-    const fetchSubcategories = async () => {
-        try {
-            const response = await axios.get(`${backendUrl}/admin/getsubcategories`);
-            setGetSubcategories(response.data);
-        } catch (err) {
-            console.error('Error fetching subcategories:', err);
-        }
-    };
-
-    // Post new subcategory to the backend
-    const postSubcategories = async () => {
-        const data = {
-            name: subcategories,
-            category: categories, // Assuming categories state holds the selected category ID
-            maincategoriesData: maincategory // Add maincategoriesData to the data object
-        };
-    
-        console.log('Data to be posted:', data); // Debug log
-    
-        try {
-            await axios.post(`${backendUrl}/admin/postsubcategories`, data);
-            handleClose();
-            fetchSubcategories(); // Refresh subcategories after adding
-        } catch (err) {
-            console.error('Error posting subcategory:', err);
-        }
-    };
-    // Fetch main categories and subcategories on component mount
-    useEffect(() => {
-        fetchMaincategories();
-        fetchCategories();
-        fetchSubcategories();
-    }, [backendUrl]);
-
-    // Handle edit action for subcategories
-    const handleOn = async (id) => {
-        setOn(true);
-        setUid(id);
-        try {
-            const response = await axios.get(`${backendUrl}/admin/getsubcategoriesbyid/${id}`);
-            setGetSubcategoriesById(response.data);
-        } catch (err) {
-            console.error('Error fetching subcategory by id:', err);
-        }
-    };
-
-    // Update changes for subcategory
-    const handleUpdateChange = (e) => {
-        const { name, value } = e.target;
-        setGetSubcategoriesById(prevState => ({ ...prevState, [name]: value }));
-    };
-
-    // Update subcategory details
-    const updateSubcategory = async () => {
-        const data = {
-            name: getSubcategoriesById.name,
-            category: getSubcategoriesById.category
-        };
-        try {
-            await axios.put(`${backendUrl}/admin/putsubcategories/${uid}`, data);
-            handleOff();
-            fetchSubcategories(); // Refresh subcategories after updating
-        } catch (err) {
-            console.error('Error updating subcategory:', err);
-        }
-    };
-
-    // Delete subcategory
-    const handleDelete = async (id) => {
-        const windowConfirmation = window.confirm('Are you sure to delete this item?');
-        if (windowConfirmation) {
-            try {
-                await axios.delete(`${backendUrl}/admin/deletesubcategories/${id}`);
-                fetchSubcategories(); // Refresh subcategories after deleting
-            } catch (err) {
-                console.error('Error deleting subcategory:', err);
-            }
-        }
-    };
-
-    // Log data on changes in subcategories and categories
-    useEffect(() => {
-        console.log('Subcategories:', getSubcategories);
-        console.log('Categories:', getCategories);
-    }, [getSubcategories, getCategories]);
-
-    // Filter categories based on selected main category
-    const filteredCategories = getCategories.filter(cat => cat.maincategoriesData._id === maincategory);
+// Filter categories based on selected main category
+const filteredCategories = getCategories.filter(cat => cat.maincategoriesData._id === maincategory);
 
     return (
         <div>

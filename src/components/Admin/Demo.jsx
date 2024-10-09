@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SideNav from "./SideNav";
@@ -34,7 +30,9 @@ function Dishes() {
   const [getSubcategories, setGetSubcategories] = useState([]);
   const [getDishes, setGetDishes] = useState([]);
   const [getColors, setGetColors] = useState([]);
-  const [imageFiles, setImageFiles] = useState({}); // Initialize state for image files
+  const [imageFiles, setImageFiles] = useState({});
+  const [stocks, setStocks] = useState({});
+  const [selectedColors, setSelectedColors] = useState({}); // To manage selected colors for each item
 
 
   const [getDishesById, setGetDishesById] = useState({
@@ -56,27 +54,29 @@ function Dishes() {
     const selectedFiles = Array.from(e.target.files);
     setImage(selectedFiles);
   };
+
   const handleImageUpload = (event, selectedColor) => {
     const files = Array.from(event.target.files);
     setImageFiles((prev) => ({
       ...prev,
-      [selectedColor]: [...prev[selectedColor], ...files], // Append new files to the selected color
+      [selectedColor]: [...prev[selectedColor], ...files],
     }));
   };
-  
+
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const handleOff = () => setOn(false);
 
-  // Fetch main categories, categories, and subcategories
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
     const fetchData = async () => {
       try {
         const [mainCatResponse, catResponse, subCatResponse, dishesResponse] = await Promise.all([
-          axios.get(`${backendUrl}/admin/getmaincategories`),
-          axios.get(`${backendUrl}/admin/getcategories`),
-          axios.get(`${backendUrl}/admin/getsubcategories`),
-          axios.get(`${backendUrl}/admin/getdishes`)
+          axios.get(`${backendUrl}/admin/getmaincategories`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${backendUrl}/admin/getcategories`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${backendUrl}/admin/getsubcategories`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${backendUrl}/admin/getdishes`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         setGetMaincategories(mainCatResponse.data);
@@ -88,25 +88,26 @@ function Dishes() {
       }
     };
 
-    // Fetch colors
     const fetchColors = async () => {
       try {
-        const response = await axios.get(`${backendUrl}/admin/getcolors`);
-        setGetColors(response.data);  // Set the colors state with fetched data
+        const response = await axios.get(`${backendUrl}/admin/getcolors`, { headers: { Authorization: `Bearer ${token}` } });
+        setGetColors(response.data);
       } catch (err) {
         console.error(err);
-        alert("An error occurred while fetching colors.");
+        alert('An error occurred while fetching colors.');
       }
     };
 
     fetchData();
-    fetchColors();  // Call the fetchColors function
+    fetchColors();
   }, [backendUrl]);
 
-  // Function to handle POST dishes
- 
+
   const postDishes = async () => {
+    const token = localStorage.getItem('token');
     const formData = new FormData();
+    
+    // Append basic details
     formData.append("dishes", dishes);
     formData.append("description", description);
     formData.append("category", categories);
@@ -114,34 +115,38 @@ function Dishes() {
     formData.append("subcategories", subcategories);
     formData.append("oldprice", oldprice);
     formData.append("newprice", newprice);
-    formData.append("color", color);
     formData.append("Itemnumber", Itemnumber);
     formData.append("manufacturer", manufacturer);
     formData.append("productcare", productcare);
     formData.append("features", features);
-
-    // Append images for each color
+  
+    // Append images and stock for each color
     for (const [colorKey, files] of Object.entries(imageFiles)) {
-        files.forEach((file, index) => {
-            formData.append(`images_${colorKey}_${index}`, file); // Include a prefix for clarity
-        });
+      files.forEach((file, index) => {
+        formData.append(`images_${colorKey}_${index}`, file); // Append image
+        formData.append(`stock_${colorKey}`, stocks[colorKey] || 0); // Append stock for the color
+      });
     }
-
+  
     try {
-        await axios.post(`${backendUrl}/admin/postdishes`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        window.location.reload();
+      await axios.post(`${backendUrl}/admin/postdishes`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      window.location.reload();
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
-};
+  };
 
 
   const updateDishes = async () => {
+    const token = localStorage.getItem('token');
     const formData = new FormData();
+    
+    // Append existing details for the dish
     formData.append("dishes", getDishesById.dishes);
     formData.append("description", getDishesById.description);
     formData.append("oldprice", getDishesById.oldprice);
@@ -151,28 +156,108 @@ function Dishes() {
     formData.append("subcategories", getDishesById.subcategory);
     formData.append("color", getDishesById.color);
     formData.append("Itemnumber", getDishesById.Itemnumber);
-    formData.append("ram", getDishesById.productcare);
-    formData.append("internalstorage", getDishesById.manufacturer);
+    formData.append("productcare", getDishesById.productcare);
+    formData.append("manufacturer", getDishesById.manufacturer);
     formData.append("features", getDishesById.features);
-
-    if (image.length > 0) {
-      image.forEach(file => formData.append("image", file));
+  
+    // Loop through imageFiles and stocks to append new images and stock
+    for (const [colorKey, files] of Object.entries(imageFiles)) {
+      files.forEach((file, index) => {
+        formData.append(`images_${colorKey}_${index}`, file); // Append new image
+        formData.append(`stock_${colorKey}`, stocks[colorKey] || getDishesById.stock[colorKey] || 0); // Append stock for the color
+      });
     }
-
+  
     try {
-      await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData);
+      await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       window.location.reload();
     } catch (err) {
       console.error('Error updating dish:', err);
     }
   };
+  
+  // const postDishes = async () => {
+  //   const token = localStorage.getItem('token');
+  //   const formData = new FormData();
+  //   formData.append("dishes", dishes);
+  //   formData.append("description", description);
+  //   formData.append("category", categories);
+  //   formData.append("maincategories", maincategory);
+  //   formData.append("subcategories", subcategories);
+  //   formData.append("oldprice", oldprice);
+  //   formData.append("newprice", newprice);
+  //   formData.append("color", color);
+  //   formData.append("Itemnumber", Itemnumber);
+  //   formData.append("manufacturer", manufacturer);
+  //   formData.append("productcare", productcare);
+  //   formData.append("features", features);
+
+  //   for (const [colorKey, files] of Object.entries(imageFiles)) {
+  //     files.forEach((file, index) => {
+  //       formData.append(`images_${colorKey}_${index}`, file);
+  //     });
+  //   }
+
+  //   try {
+  //     await axios.post(`${backendUrl}/admin/postdishes`, formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // const updateDishes = async () => {
+  //   const token = localStorage.getItem('token');
+  //   const formData = new FormData();
+  //   formData.append("dishes", getDishesById.dishes);
+  //   formData.append("description", getDishesById.description);
+  //   formData.append("oldprice", getDishesById.oldprice);
+  //   formData.append("newprice", getDishesById.newprice);
+  //   formData.append("category", getDishesById.category);
+  //   formData.append("maincategories", getDishesById.mainCategory);
+  //   formData.append("subcategories", getDishesById.subcategory);
+  //   formData.append("color", getDishesById.color);
+  //   formData.append("Itemnumber", getDishesById.Itemnumber);
+  //   formData.append("ram", getDishesById.productcare);
+  //   formData.append("internalstorage", getDishesById.manufacturer);
+  //   formData.append("features", getDishesById.features);
+
+  //   if (image.length > 0) {
+  //     image.forEach(file => formData.append("image", file));
+  //   }
+
+  //   try {
+  //     await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.error('Error updating dish:', err);
+  //   }
+  // };
 
   const handleOn = async (id) => {
+    const token = localStorage.getItem('token');
     setOn(true);
     setUid(id);
 
     try {
-      const response = await axios.get(`${backendUrl}/admin/getdishesbyid/${id}`);
+      const response = await axios.get(`${backendUrl}/admin/getdishesbyid/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = response.data;
       setGetDishesById({
         dishes: data.dishes,
@@ -181,7 +266,7 @@ function Dishes() {
         description: data.description,
         Itemnumber: data.Itemnumber,
         manufacturer: data.manufacturer,
-        color:data.color,
+        color: data.color,
         productcare: data.productcare,
         features: data.features,
         mainCategory: data.mainCategory?._id || '',
@@ -203,25 +288,48 @@ function Dishes() {
       [name]: value,
     }));
   };
-  
 
   const handleDelete = async (id) => {
+    const token = localStorage.getItem('token');
     const windowConfirmation = window.confirm("Are you sure to Delete this item");
     if (windowConfirmation) {
       try {
-        await axios.delete(`${backendUrl}/admin/deletedishes/${id}`);
+        await axios.delete(`${backendUrl}/admin/deletedishes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         window.location.reload();
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     }
   };
 
-  // Filtering categories and subcategories based on main category and category
-  const filteredCategories = getCategories.filter(cat => cat.maincategoriesData._id === maincategory);
-  const filteredSubcategories = getSubcategories.filter(subCat => subCat.category._id === categories);
+  // Filtering logic
+  const filteredCategories = getCategories.filter(cat => 
+    cat.maincategoriesData && cat.maincategoriesData._id === maincategory
+  );
 
-  return (
+  const filteredSubcategories = getSubcategories.filter(subCat => 
+    subCat.category && subCat.category._id === categories
+  );
+
+  const handleStockChange = (e, colorKey) => {
+    setStocks((prevStocks) => ({
+      ...prevStocks,
+      [colorKey]: e.target.value, // Update stock for the selected color
+    }));
+  };
+
+  const handleColorChange = (itemId, color) => {
+    setSelectedColors((prev) => ({ ...prev, [itemId]: color }));
+    if (color && !stocks[color]) {
+      setStocks((prevStocks) => ({ ...prevStocks, [color]: 0 })); // Initialize stock if it's a new color
+    }
+  };
+  
+return (
     <div>
       <SideNav />
       <div className="whole">
@@ -234,24 +342,24 @@ function Dishes() {
                 <IoIosAddCircle className="add_btn" onClick={handleShow} />
               </Tooltip>
             </div>
-            {/* <div className="container table-responsive">
+            <div className="container table-responsive">
               <table className="table table-striped table-bordered">
                 <thead className="thead-dark">
                   <tr>
-                    <th scope="col">Image</th>
+                    <th scope="col">Images</th>
                     <th scope="col">Item Number</th>
                     <th scope="col">Name</th>
                     <th scope="col">Description</th>
                     <th scope="col">Old Price</th>
-
                     <th scope="col">New Price</th>
                     <th scope="col">Color</th>
-                    <th scope="col">manufacturer</th>
-                    <th scope="col">productcare</th>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Manufacturer</th>
+                    <th scope="col">Product Care</th>
                     <th scope="col">Features</th>
                     <th scope="col">Main Category</th>
                     <th scope="col">Category</th>
-                    <th scope="col">Sub Category</th>
+                    <th scope="col">Subcategory</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
@@ -260,8 +368,15 @@ function Dishes() {
                     <tr key={index}>
                       <td>
                         <div className="image-container">
-                          {items.image.map((image, idx) => (
-                            <img key={idx} className="avatar" src={`${backendUrl}/images/${image}`} alt={`Image ${idx + 1}`} />
+                          {items.images && Object.keys(items.images).map((colorKey) => (
+                            items.images[colorKey].map((image, imageIdx) => (
+                              <img
+                                key={imageIdx}
+                                className="avatar"
+                                src={`${backendUrl}/images/${image.image}`} // Ensure you're using the correct image property
+                                alt={`Dish Image ${imageIdx + 1}`}
+                              />
+                            ))
                           ))}
                         </div>
                       </td>
@@ -269,7 +384,109 @@ function Dishes() {
                       <td className="text-black item-text"><b>{items.dishes}</b></td>
                       <td className="text-black item-text">{items.description}</td>
                       <td className="text-black item-text">{items.oldprice}</td>
+                      <td className="text-black item-text">{items.newprice}</td>
+                      {/* <td className="text-black item-text">{items.Color || 'No Color'}</td>
+                      <td className="text-black item-text">
+                        {items.images && Object.keys(items.images).map((colorKey) => (
+                          items.images[colorKey].map((image, imageIdx) => (
+                            <div key={imageIdx}>{image.stock}</div> // Displaying stock
+                          ))
+                        ))}
+                      </td> */}
+                     <td className="text-black item-text">
+                        <label>Color</label>
+                        <select
+                          className="form-control"
+                          id="color"
+                          name="color"
+                          value={selectedColors[items._id] || ''}
+                          onChange={(e) => handleColorChange(items._id, e.target.value)}
+                        >
+                          <option value="">Select Color</option>
+                          {getColors.map((colorOption) => (
+                            <option key={colorOption._id} value={colorOption.name}>
+                              {colorOption.Color}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
 
+                      <td className="text-black item-text">
+                        {selectedColors[items._id] && (
+                          <div>
+                            {stocks[selectedColors[items._id]] === 0 ? (
+                              <span className="text-danger">Out of Stock</span>
+                            ) : stocks[selectedColors[items._id]] < 10 ? (
+                              <span className="text-warning">Only Few Left</span>
+                            ) : (
+                              <span className="text-success">In Stock</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="text-black item-text">{items.manufacturer}</td>
+                      <td className="text-black item-text">{items.productcare}</td>
+                      <td className="text-black item-text">{items.features}</td>
+                      <td>{items.mainCategory?.name || 'No Main Category'}</td>
+                      <td>{items.category?.name || 'No Category'}</td>
+                      <td>{items.subcategory?.name || 'No Subcategory'}</td>
+                      <td className="text-black item-text">
+                        <Tooltip title="Edit">
+                          <FiEdit onClick={() => handleOn(items._id)} className="edit-icon" />
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <MdDelete onClick={() => handleDelete(items._id)} className="delete-icon" />
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* <div className="container table-responsive"> 
+              <table className="table table-striped table-bordered">
+                <thead className="thead-dark">
+                  <tr>
+                    <th scope="col">Images</th>
+                    <th scope="col">Item Number</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Old Price</th>
+                    <th scope="col">New Price</th>
+                    <th scope="col">Color</th>
+                    <th scope="col">Stock</th>
+
+                    <th scope="col">Manufacturer</th>
+                    <th scope="col">Product Care</th>
+                    <th scope="col">Features</th>
+                    <th scope="col">Main Category</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Subcategory</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getDishes.map((items, index) => (
+                    <tr key={index}>
+                      <td>
+                        <div className="image-container">
+                          {items.images && Object.keys(items.images).map((colorKey) => (
+                            items.images[colorKey].map((image, imageIdx) => (
+                              <img
+                                key={imageIdx}
+                                className="avatar"
+                                src={`${backendUrl}/images/${image}`} // Correct path for the images
+                                alt={`Dish Image ${imageIdx + 1}`} // Alt text for the image
+                              />
+                            ))
+                          ))}
+                        </div>
+                      </td>
+                      <td className="text-black item-text">{items.Itemnumber}</td>
+                      <td className="text-black item-text"><b>{items.dishes}</b></td>
+                      <td className="text-black item-text">{items.description}</td>
+                      <td className="text-black item-text">{items.oldprice}</td>
                       <td className="text-black item-text">{items.newprice}</td>
                       <td className="text-black item-text">{items.Color}</td>
                       <td className="text-black item-text">{items.manufacturer}</td>
@@ -285,7 +502,6 @@ function Dishes() {
                         <Tooltip title="Delete">
                           <MdDelete onClick={() => handleDelete(items._id)} className="delete-icon" />
                         </Tooltip>
-                        
                       </td>
                     </tr>
                   ))}
@@ -320,13 +536,13 @@ function Dishes() {
               <textarea className="form-control" value={description} onChange={(e) => setDescription(e.target.value)} />
               
               <label>Manufacturer</label>
-              <input type="text" className="form-control" placeholder="Enter Manufacturer" value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} />
+              <textarea type="text" className="form-control" placeholder="Enter Manufacturer" value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} />
               
               <label>Product Care</label>
-              <input type="text" className="form-control" placeholder="Enter Product Care" value={productcare} onChange={(e) => setProductcare(e.target.value)} />
+              <textarea type="text" className="form-control" placeholder="Enter Product Care" value={productcare} onChange={(e) => setProductcare(e.target.value)} />
               
               <label>Features</label>
-              <input type="text" className="form-control" value={features} onChange={(e) => setFeatures(e.target.value)} />
+              <textarea type="text" className="form-control" value={features} onChange={(e) => setFeatures(e.target.value)} />
               
               <div className="form-group">
                 <label htmlFor="maincategory">Main Category</label>
@@ -364,37 +580,77 @@ function Dishes() {
                 </select>
               </div>
 
-              {/* Dynamic Color and Image Upload Section */}
+            
+
+              
+
               <label>Color</label>
-              <select className="form-control" id="color" name="color" value={color} onChange={(e) => {
-                setColor(e.target.value);
-                setImageFiles((prev) => ({ ...prev, [e.target.value]: [] })); // Initialize an empty array for the selected color
-              }}>
-                <option value="">Select Color</option>
-                {getColors.map((colorOption) => (
-                  <option key={colorOption._id} value={colorOption.name}>{colorOption.Color}</option>
-                ))}
-              </select>
+                  <select
+                    className="form-control"
+                    id="color"
+                    name="color"
+                    value={color}
+                    onChange={(e) => {
+                      setColor(e.target.value);
+                      if (!imageFiles[e.target.value]) {
+                        setImageFiles((prev) => ({ ...prev, [e.target.value]: [] })); // Initialize an empty array for the new color
+                      }
+                      if (!stocks[e.target.value]) {
+                        setStocks((prevStocks) => ({ ...prevStocks, [e.target.value]: 0 })); // Initialize stock for the new color
+                      }
+                    }}
+                  >
+                    <option value="">Select Color</option>
+                    {getColors.map((colorOption) => (
+                      <option key={colorOption._id} value={colorOption.name}>
+                        {colorOption.Color}
+                      </option>
+                    ))}
+                  </select>
 
-              <div className="form-group">
-                <label htmlFor="image">Upload Images</label>
-                {color && (
-                  <input
-                    type="file"
-                    className="form-control-file"
-                    id="image"
-                    multiple
-                    onChange={(e) => handleImageUpload(e, color)}
-                  />
-                )}
-              </div>
+                  {/* Image Upload Section */}
+                  {color && (
+                    <>
+                      <div className="form-group">
+                        <label htmlFor="image">Upload Images</label>
+                        <input
+                          type="file"
+                          className="form-control-file"
+                          id="image"
+                          multiple
+                          onChange={(e) => handleImageUpload(e, color)}
+                        />
+                      </div>
 
-              <div>
-                <h5>Uploaded Images for {color}:</h5>
-                {imageFiles[color] && imageFiles[color].map((file, index) => (
-                  <p key={index}>{file.name}</p> // Display the names of uploaded files
-                ))}
-              </div>
+                      {/* Stock Input Section */}
+                      <div className="form-group">
+                        <label htmlFor="stock">Stock for {color}</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          id="stock"
+                          value={stocks[color] || ""}
+                          onChange={(e) => handleStockChange(e, color)}
+                          placeholder="Enter stock quantity"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Display Uploaded Images and Stocks */}
+                  <div>
+                    {Object.keys(imageFiles).map((colorKey) => (
+                      <div key={colorKey}>
+                        <h5>Uploaded Images for {colorKey}:</h5>
+                        {imageFiles[colorKey].map((file, index) => (
+                          <p key={index}>{file.name}</p> // Display image names
+                        ))}
+                        {/* Display stock for each color */}
+                        <p>Stock: {stocks[colorKey] || "No stock set"}</p>
+                      </div>
+                    ))}
+                  </div>
+
             </form>
           </div>
         </Modal.Body>

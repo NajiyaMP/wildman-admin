@@ -72,158 +72,354 @@ function Dishes() {
   const handleShow = () => setShow(true);
   const handleOff = () => setOn(false);
 
+
   // Fetch main categories, categories, and subcategories
-  useEffect(() => {
-    const fetchData = async () => {
+// Fetch main categories, categories, and subcategories
+useEffect(() => {
+  const fetchData = async () => {
+      const token = localStorage.getItem('token'); // Get token from localStorage
       try {
-        const [mainCatResponse, catResponse, subCatResponse, dishesResponse] = await Promise.all([
-          axios.get(`${backendUrl}/admin/getmaincategories`),
-          axios.get(`${backendUrl}/admin/getcategories`),
-          axios.get(`${backendUrl}/admin/getsubcategories`),
-          axios.get(`${backendUrl}/admin/getdishes`)
-        ]);
+          const [mainCatResponse, catResponse, subCatResponse, dishesResponse] = await Promise.all([
+              axios.get(`${backendUrl}/admin/getmaincategories`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`, // Include token for authentication
+                  },
+              }),
+              axios.get(`${backendUrl}/admin/getcategories`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`, // Include token for authentication
+                  },
+              }),
+              axios.get(`${backendUrl}/admin/getsubcategories`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`, // Include token for authentication
+                  },
+              }),
+              axios.get(`${backendUrl}/admin/getdishes`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`, // Include token for authentication
+                  },
+              }),
+          ]);
 
-        setGetMaincategories(mainCatResponse.data);
-        setGetCategories(catResponse.data);
-        setGetSubcategories(subCatResponse.data);
-        setGetDishes(dishesResponse.data);
+          setGetMaincategories(mainCatResponse.data);
+          setGetCategories(catResponse.data);
+          setGetSubcategories(subCatResponse.data);
+          setGetDishes(dishesResponse.data);
       } catch (err) {
-        console.log(err);
+          console.log(err);
       }
-    };
+  };
 
-    // Fetch colors
-    const fetchColors = async () => {
+  // Fetch colors
+  const fetchColors = async () => {
+      const token = localStorage.getItem('token'); // Get token from localStorage
       try {
-        const response = await axios.get(`${backendUrl}/admin/getcolors`);
-        setGetColors(response.data);  // Set the colors state with fetched data
+          const response = await axios.get(`${backendUrl}/admin/getcolors`, {
+              headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                   // Include token for authentication
+              },
+          });
+          setGetColors(response.data); // Set the colors state with fetched data
       } catch (err) {
-        console.error(err);
-        alert("An error occurred while fetching colors.");
+          console.error(err);
+          alert("An error occurred while fetching colors.");
       }
-    };
+  };
 
-    fetchData();
-    fetchColors();  // Call the fetchColors function
-  }, [backendUrl]);
+  fetchData();
+  fetchColors(); // Call the fetchColors function
+}, [backendUrl]);
 
+// Function to handle POST dishes
+const postDishes = async () => {
+  const formData = new FormData();
+  formData.append("dishes", dishes);
+  formData.append("description", description);
+  formData.append("category", categories);
+  formData.append("maincategories", maincategory);
+  formData.append("subcategories", subcategories);
+  formData.append("oldprice", oldprice);
+  formData.append("newprice", newprice);
+  formData.append("color", color);
+  formData.append("Itemnumber", Itemnumber);
+  formData.append("manufacturer", manufacturer);
+  formData.append("productcare", productcare);
+  formData.append("features", features);
+  image.forEach(file => formData.append("image", file));
 
-  
-
-  // Function to handle POST dishes
-  const postDishes = async () => {
-    const formData = new FormData();
-    formData.append("dishes", dishes);
-    formData.append("description", description);
-    formData.append("category", categories);
-    formData.append("maincategories", maincategory);
-    formData.append("subcategories", subcategories);
-    formData.append("oldprice", oldprice);
-
-    formData.append("newprice", newprice);
-    formData.append("color", color);
-    formData.append("Itemnumber", Itemnumber);
-    formData.append("manufacturer", manufacturer);
-    formData.append("productcare", productcare);
-    formData.append("features", features);
-    image.forEach(file => formData.append("image", file));
-
-    try {
+  const token = localStorage.getItem('token'); // Get token from localStorage
+  try {
       await axios.post(`${backendUrl}/admin/postdishes`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`, // Include token for authentication
+          },
       });
       window.location.reload();
-    } catch (err) {
+  } catch (err) {
       console.log(err);
-    }
-  };
+  }
+};
 
-  const updateDishes = async () => {
-    const formData = new FormData();
-    formData.append("dishes", getDishesById.dishes);
-    formData.append("description", getDishesById.description);
-    formData.append("oldprice", getDishesById.oldprice);
-    formData.append("newprice", getDishesById.newprice);
-    formData.append("category", getDishesById.category);
-    formData.append("maincategories", getDishesById.mainCategory);
-    formData.append("subcategories", getDishesById.subcategory);
-    formData.append("color", getDishesById.color);
-    formData.append("Itemnumber", getDishesById.Itemnumber);
-    formData.append("ram", getDishesById.productcare);
-    formData.append("internalstorage", getDishesById.manufacturer);
-    formData.append("features", getDishesById.features);
-    
-    if (image.length > 0) {
+// Update dishes
+const updateDishes = async () => {
+  const formData = new FormData();
+  formData.append("dishes", getDishesById.dishes);
+  formData.append("description", getDishesById.description);
+  formData.append("oldprice", getDishesById.oldprice);
+  formData.append("newprice", getDishesById.newprice);
+  formData.append("category", getDishesById.category);
+  formData.append("maincategories", getDishesById.mainCategory);
+  formData.append("subcategories", getDishesById.subcategory);
+  formData.append("color", getDishesById.color);
+  formData.append("Itemnumber", getDishesById.Itemnumber);
+  formData.append("ram", getDishesById.productcare);
+  formData.append("internalstorage", getDishesById.manufacturer);
+  formData.append("features", getDishesById.features);
+
+  if (image.length > 0) {
       image.forEach(file => formData.append("image", file));
-    }
+  }
 
-    try {
-      await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData);
+  const token = localStorage.getItem('token'); // Get token from localStorage
+  try {
+      await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData, {
+          headers: {
+              Authorization: `Bearer ${token}`, // Include token for authentication
+          },
+      });
       window.location.reload();
-    } catch (err) {
+  } catch (err) {
       console.error('Error updating dish:', err);
-    }
-  };
+  }
+};
 
-  const handleOn = async (id) => {
-    setOn(true);
-    setUid(id);
+// Handle fetching dishes by ID
+const handleOn = async (id) => {
+  setOn(true);
+  setUid(id);
 
-    try {
-      const response = await axios.get(`${backendUrl}/admin/getdishesbyid/${id}`);
+  const token = localStorage.getItem('token'); // Get token from localStorage
+  try {
+      const response = await axios.get(`${backendUrl}/admin/getdishesbyid/${id}`, {
+          headers: {
+              Authorization: `Bearer ${token}`, // Include token for authentication
+          },
+      });
       const data = response.data;
       setGetDishesById({
-        dishes: data.dishes,
-        oldprice: data.oldprice,
-        newprice: data.newprice,
-        description: data.description,
-        Itemnumber: data.Itemnumber,
-        manufacturer: data.manufacturer,
-        color:data.color,
-        productcare: data.productcare,
-        features: data.features,
-        mainCategory: data.mainCategory?._id || '',
-        category: data.category?._id || '',
-        subcategory: data.subcategory?._id || '',
-        image: data.image || [],
+          dishes: data.dishes,
+          oldprice: data.oldprice,
+          newprice: data.newprice,
+          description: data.description,
+          Itemnumber: data.Itemnumber,
+          manufacturer: data.manufacturer,
+          color: data.color,
+          productcare: data.productcare,
+          features: data.features,
+          mainCategory: data.mainCategory?._id || '',
+          category: data.category?._id || '',
+          subcategory: data.subcategory?._id || '',
+          image: data.image || [],
       });
       setMaincategory(data.mainCategory?._id || '');
       setCategories(data.category?._id || '');
-    } catch (err) {
+  } catch (err) {
       console.log(err);
-    }
-  };
+  }
+};
 
-  const handleUpdateChange = (e) => {
-    const { name, value } = e.target;
-    setGetDishesById(prevState => ({
+// Handle changes for dish updates
+const handleUpdateChange = (e) => {
+  const { name, value } = e.target;
+  setGetDishesById(prevState => ({
       ...prevState,
       [name]: value,
-    }));
-  };
+  }));
+};
 
-  const handleDelete = async (id) => {
-    const windowConfirmation = window.confirm("Are you sure to Delete this item");
-    if (windowConfirmation) {
+// Handle delete action
+const handleDelete = async (id) => {
+  const token = localStorage.getItem('token'); // Get token from localStorage
+  const windowConfirmation = window.confirm("Are you sure to delete this item?");
+  if (windowConfirmation) {
       try {
-        await axios.delete(`${backendUrl}/admin/deletedishes/${id}`);
-        window.location.reload();
+          await axios.delete(`${backendUrl}/admin/deletedishes/${id}`, {
+              headers: {
+                  Authorization: `Bearer ${token}`, // Include token for authentication
+              },
+          });
+          window.location.reload();
       } catch (err) {
-        console.log(err);
+          console.log(err);
       }
-    }
-  };
+  }
+};
 
-  // Filtering categories and subcategories based on main category and category
-  const filteredCategories = getCategories.filter(cat => 
-    cat.maincategoriesData && cat.maincategoriesData._id === maincategory
-  );
+// Filtering categories and subcategories based on main category and category
+const filteredCategories = getCategories.filter(cat => 
+  cat.maincategoriesData && cat.maincategoriesData._id === maincategory
+);
+
+const filteredSubcategories = getSubcategories.filter(subCat => 
+  subCat.category && subCat.category._id === categories
+);
+
+  // // Fetch main categories, categories, and subcategories
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [mainCatResponse, catResponse, subCatResponse, dishesResponse] = await Promise.all([
+  //         axios.get(`${backendUrl}/admin/getmaincategories`),
+  //         axios.get(`${backendUrl}/admin/getcategories`),
+  //         axios.get(`${backendUrl}/admin/getsubcategories`),
+  //         axios.get(`${backendUrl}/admin/getdishes`)
+  //       ]);
+
+  //       setGetMaincategories(mainCatResponse.data);
+  //       setGetCategories(catResponse.data);
+  //       setGetSubcategories(subCatResponse.data);
+  //       setGetDishes(dishesResponse.data);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+
+  //   // Fetch colors
+  //   const fetchColors = async () => {
+  //     try {
+  //       const response = await axios.get(`${backendUrl}/admin/getcolors`);
+  //       setGetColors(response.data);  // Set the colors state with fetched data
+  //     } catch (err) {
+  //       console.error(err);
+  //       alert("An error occurred while fetching colors.");
+  //     }
+  //   };
+
+  //   fetchData();
+  //   fetchColors();  // Call the fetchColors function
+  // }, [backendUrl]);
+
+
   
-  const filteredSubcategories = getSubcategories.filter(subCat => 
-    subCat.category && subCat.category._id === categories
-  );
+
+  // // Function to handle POST dishes
+  // const postDishes = async () => {
+  //   const formData = new FormData();
+  //   formData.append("dishes", dishes);
+  //   formData.append("description", description);
+  //   formData.append("category", categories);
+  //   formData.append("maincategories", maincategory);
+  //   formData.append("subcategories", subcategories);
+  //   formData.append("oldprice", oldprice);
+
+  //   formData.append("newprice", newprice);
+  //   formData.append("color", color);
+  //   formData.append("Itemnumber", Itemnumber);
+  //   formData.append("manufacturer", manufacturer);
+  //   formData.append("productcare", productcare);
+  //   formData.append("features", features);
+  //   image.forEach(file => formData.append("image", file));
+
+  //   try {
+  //     await axios.post(`${backendUrl}/admin/postdishes`, formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data'
+  //       }
+  //     });
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // const updateDishes = async () => {
+  //   const formData = new FormData();
+  //   formData.append("dishes", getDishesById.dishes);
+  //   formData.append("description", getDishesById.description);
+  //   formData.append("oldprice", getDishesById.oldprice);
+  //   formData.append("newprice", getDishesById.newprice);
+  //   formData.append("category", getDishesById.category);
+  //   formData.append("maincategories", getDishesById.mainCategory);
+  //   formData.append("subcategories", getDishesById.subcategory);
+  //   formData.append("color", getDishesById.color);
+  //   formData.append("Itemnumber", getDishesById.Itemnumber);
+  //   formData.append("ram", getDishesById.productcare);
+  //   formData.append("internalstorage", getDishesById.manufacturer);
+  //   formData.append("features", getDishesById.features);
+    
+  //   if (image.length > 0) {
+  //     image.forEach(file => formData.append("image", file));
+  //   }
+
+  //   try {
+  //     await axios.put(`${backendUrl}/admin/putdishes/${uid}`, formData);
+  //     window.location.reload();
+  //   } catch (err) {
+  //     console.error('Error updating dish:', err);
+  //   }
+  // };
+
+  // const handleOn = async (id) => {
+  //   setOn(true);
+  //   setUid(id);
+
+  //   try {
+  //     const response = await axios.get(`${backendUrl}/admin/getdishesbyid/${id}`);
+  //     const data = response.data;
+  //     setGetDishesById({
+  //       dishes: data.dishes,
+  //       oldprice: data.oldprice,
+  //       newprice: data.newprice,
+  //       description: data.description,
+  //       Itemnumber: data.Itemnumber,
+  //       manufacturer: data.manufacturer,
+  //       color:data.color,
+  //       productcare: data.productcare,
+  //       features: data.features,
+  //       mainCategory: data.mainCategory?._id || '',
+  //       category: data.category?._id || '',
+  //       subcategory: data.subcategory?._id || '',
+  //       image: data.image || [],
+  //     });
+  //     setMaincategory(data.mainCategory?._id || '');
+  //     setCategories(data.category?._id || '');
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // const handleUpdateChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setGetDishesById(prevState => ({
+  //     ...prevState,
+  //     [name]: value,
+  //   }));
+  // };
+
+  // const handleDelete = async (id) => {
+  //   const windowConfirmation = window.confirm("Are you sure to Delete this item");
+  //   if (windowConfirmation) {
+  //     try {
+  //       await axios.delete(`${backendUrl}/admin/deletedishes/${id}`);
+  //       window.location.reload();
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   }
+  // };
+
+  // // Filtering categories and subcategories based on main category and category
+  // const filteredCategories = getCategories.filter(cat => 
+  //   cat.maincategoriesData && cat.maincategoriesData._id === maincategory
+  // );
+  
+  // const filteredSubcategories = getSubcategories.filter(subCat => 
+  //   subCat.category && subCat.category._id === categories
+  // );
     return (
     <div>
       <SideNav />

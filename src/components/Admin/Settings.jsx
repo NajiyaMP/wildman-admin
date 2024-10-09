@@ -20,6 +20,8 @@ function Settings() {
     contact: ''
   });
   const [editId, setEditId] = useState(null);
+  const token = localStorage.getItem('token'); 
+
 
   useEffect(() => {
     fetchProfiles();
@@ -27,7 +29,11 @@ function Settings() {
 
   const fetchProfiles = async () => {
     try {
-      const response = await axios.get(`${backendUrl}/admin/getsettings`);
+      const response = await axios.get(`${backendUrl}/admin/getsettings`,{
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include token for authentication
+      },
+      });
       setProfiles(response.data);
     } catch (error) {
       console.error('Error fetching profiles:', error);
@@ -71,13 +77,17 @@ function Settings() {
       if (editId) {
         await axios.put(`${backendUrl}/admin/putsettings/${editId}`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,  // Include token for authentication
+
           }
         });
       } else {
         await axios.post(`${backendUrl}/admin/postsettings`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,  // Include token for authentication
+
           }
         });
       }
@@ -96,7 +106,11 @@ function Settings() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${backendUrl}/admin/deletesettings/${id}`);
+      await axios.delete(`${backendUrl}/admin/deletesettings/${id}`,{
+        headers: {
+          Authorization: `Bearer ${token}`,  // Include token for authentication
+      },
+      });
       fetchProfiles();
     } catch (error) {
       console.error('Error deleting profile:', error);

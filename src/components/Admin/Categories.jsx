@@ -24,26 +24,34 @@ function Categories() {
     const handleShow = () => setShow(true);
     const handleOff = () => setOn(false);
 
-
-
-
     const postCategories = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         const data = {
             name: categories, // Assuming categories is the category name
             maincategoriesData: maincategory // Use maincategory state here
         };
         try {
-            await axios.post(`${backendUrl}/admin/postcategories`, data);
+            await axios.post(`${backendUrl}/admin/postcategories`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                    'Content-Type': 'application/json',  // Set content type
+                },
+            });
             handleClose(); // Close modal after successful post
             fetchCategories(); // Refresh categories after adding a new one
         } catch (err) {
             console.error('Error posting category:', err);
         }
     };
-
+    
     const fetchCategories = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         try {
-            const response = await axios.get(`${backendUrl}/admin/getcategories`);
+            const response = await axios.get(`${backendUrl}/admin/getcategories`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
             setGetCategories(response.data);
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -51,20 +59,29 @@ function Categories() {
     };
     
     const fetchMainCategories = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         try {
-            const response = await axios.get(`${backendUrl}/admin/getmaincategories`);
+            const response = await axios.get(`${backendUrl}/admin/getmaincategories`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
             setGetMaincategories(response.data);
         } catch (err) {
             console.error('Error fetching main categories:', err);
         }
     };
-
-
+    
     const handleOn = async (id) => {
         setOn(true);
         setUid(id);
+        const token = localStorage.getItem('token'); // Get token from localStorage
         try {
-            const response = await axios.get(`${backendUrl}/admin/getcategoriesbyid/${id}`);
+            const response = await axios.get(`${backendUrl}/admin/getcategoriesbyid/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                },
+            });
             setGetCategoriesById(response.data); // Ensure response.data matches your category schema
         } catch (err) {
             console.error('Error fetching category by id:', err);
@@ -77,12 +94,18 @@ function Categories() {
     };
     
     const updateCategory = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         const data = {
             name: getCategoriesById.name,
             maincategoriesData: getCategoriesById.maincategoriesData
         };
         try {
-            await axios.put(`${backendUrl}/admin/putcategories/${uid}`, data);
+            await axios.put(`${backendUrl}/admin/putcategories/${uid}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,  // Include token for authentication
+                    'Content-Type': 'application/json',  // Set content type
+                },
+            });
             handleOff();
             fetchCategories(); // Refresh categories after updating
         } catch (err) {
@@ -90,22 +113,23 @@ function Categories() {
         }
     };
     
-   
-      
-        
-
     const handleDelete = async (id) => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
         const windowConfirmation = window.confirm('Are you sure to delete this item?');
         if (windowConfirmation) {
             try {
-                await axios.delete(`${backendUrl}/admin/deletecategories/${id}`);
+                await axios.delete(`${backendUrl}/admin/deletecategories/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,  // Include token for authentication
+                    },
+                });
                 fetchCategories(); // Refresh categories after deletion
             } catch (err) {
                 console.error('Error deleting category:', err);
             }
         }
     };
-
+    
     useEffect(() => {
         fetchCategories();
         fetchMainCategories();
@@ -115,6 +139,97 @@ function Categories() {
         console.log('Categories:', getCategories);
         console.log('Main Categories:', getMaincategories);
     }, [getCategories, getMaincategories]);
+    
+
+
+    // const postCategories = async () => {
+    //     const data = {
+    //         name: categories, // Assuming categories is the category name
+    //         maincategoriesData: maincategory // Use maincategory state here
+    //     };
+    //     try {
+    //         await axios.post(`${backendUrl}/admin/postcategories`, data);
+    //         handleClose(); // Close modal after successful post
+    //         fetchCategories(); // Refresh categories after adding a new one
+    //     } catch (err) {
+    //         console.error('Error posting category:', err);
+    //     }
+    // };
+
+    // const fetchCategories = async () => {
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getcategories`);
+    //         setGetCategories(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching categories:', err);
+    //     }
+    // };
+    
+    // const fetchMainCategories = async () => {
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getmaincategories`);
+    //         setGetMaincategories(response.data);
+    //     } catch (err) {
+    //         console.error('Error fetching main categories:', err);
+    //     }
+    // };
+
+
+    // const handleOn = async (id) => {
+    //     setOn(true);
+    //     setUid(id);
+    //     try {
+    //         const response = await axios.get(`${backendUrl}/admin/getcategoriesbyid/${id}`);
+    //         setGetCategoriesById(response.data); // Ensure response.data matches your category schema
+    //     } catch (err) {
+    //         console.error('Error fetching category by id:', err);
+    //     }
+    // };
+    
+    // const handleUpdateChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setGetCategoriesById(prevState => ({ ...prevState, [name]: value }));
+    // };
+    
+    // const updateCategory = async () => {
+    //     const data = {
+    //         name: getCategoriesById.name,
+    //         maincategoriesData: getCategoriesById.maincategoriesData
+    //     };
+    //     try {
+    //         await axios.put(`${backendUrl}/admin/putcategories/${uid}`, data);
+    //         handleOff();
+    //         fetchCategories(); // Refresh categories after updating
+    //     } catch (err) {
+    //         console.error('Error updating category:', err);
+    //     }
+    // };
+    
+   
+      
+        
+
+    // const handleDelete = async (id) => {
+    //     const windowConfirmation = window.confirm('Are you sure to delete this item?');
+    //     if (windowConfirmation) {
+    //         try {
+    //             await axios.delete(`${backendUrl}/admin/deletecategories/${id}`);
+    //             fetchCategories(); // Refresh categories after deletion
+    //         } catch (err) {
+    //             console.error('Error deleting category:', err);
+    //         }
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     fetchCategories();
+    //     fetchMainCategories();
+    // }, [backendUrl]);
+    
+    // useEffect(() => {
+    //     console.log('Categories:', getCategories);
+    //     console.log('Main Categories:', getMaincategories);
+    // }, [getCategories, getMaincategories]);
 
     return (
         <div>
